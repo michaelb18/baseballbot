@@ -30,11 +30,12 @@ with open('../baseballdatabank/core/Batting.csv','r') as csvfile:
 		if(row[0]!='playerID'):
 			if(int(row[1])>2000):
 				if(row[0] in input_dict):
-					if(float(int(row[6]))!=0):	
-						input_dict.get(row[0]).append((int(row[8]))/float(int(row[6])))
+					if(float(int(row[11]))!=0):	
+						input_dict.get(row[0]).append(row[11])
 				else:
-					if(float(int(row[6]))!=0):				
-						input_dict[row[0]]=[int(row[8])/float(int(row[6]))]			
+					if(float(int(row[11]))!=0):				
+						input_dict[row[0]]=[row[11]]
+print(input_dict)			
 inputList=list()
 outputList=list()
 for k in input_dict:
@@ -53,10 +54,10 @@ inputs=numpy.asarray(inputList)
 outputs=numpy.asarray(outputList)
 
 #hyperparams
-num_hidden_per_layer=25
+num_hidden_per_layer=20
 num_out=1
 num_in=3
-num_epochs=130
+num_epochs=15000
 input_label=tf.placeholder(tf.float32)
 output_label=tf.placeholder(tf.float32)
 
@@ -65,13 +66,13 @@ second_weight=tf.Variable(tf.random_uniform([num_hidden_per_layer,num_hidden_per
 third_weight=tf.Variable(tf.random_uniform([num_hidden_per_layer,num_hidden_per_layer],-1,1))
 fourth_weight=tf.Variable(tf.random_uniform([num_hidden_per_layer,num_out],-1,1))
 
-first_hidden_layer=tf.sigmoid(tf.matmul(input_label,first_weight))
-second_hidden_layer=tf.sinh(tf.matmul(first_hidden_layer,second_weight))
-third_hidden_layer=tf.sigmoid(tf.matmul(second_hidden_layer,third_weight))
+first_hidden_layer=tf.nn.softplus(tf.matmul(input_label,first_weight))
+second_hidden_layer=tf.nn.softplus(tf.matmul(first_hidden_layer,second_weight))
+third_hidden_layer=tf.nn.softplus(tf.matmul(second_hidden_layer,third_weight))
 dropout=tf.layers.dropout(inputs=third_hidden_layer)
-output_layer=tf.sigmoid(tf.matmul(dropout,fourth_weight))
+output_layer=tf.nn.softplus(tf.matmul(second_hidden_layer,fourth_weight))
 
-loss=tf.reduce_mean(output_layer-output_label)
+loss=tf.reduce_mean(abs(output_layer-output_label))
 opt=tf.train.GradientDescentOptimizer(.001).minimize(loss)
 
 init=tf.initialize_all_variables()
@@ -80,14 +81,14 @@ with tf.Session() as sess:
 	sess.run(init)
 	err=sess.run(loss, feed_dict={input_label:inputs, output_label:outputs})
 	i=0
-	while(abs(err)>.1):
+	for k in range(num_epochs):
 		sess.run(opt, feed_dict={input_label:inputs, output_label:outputs})
 		err=sess.run(loss, feed_dict={input_label:inputs, output_label:outputs})
 		i=i+1
-		if(i%100==0):
+		if(i%10==0):
 			print("Err:",err)
 			print("I:",i) 
-	print("Test Avg:",sess.run(output_layer,feed_dict={input_label:[[.293,.275,.322]]}))
+	print("Test HR:",sess.run(output_layer,feed_dict={input_label:[[10,10,10]]}))
 	print("Total Loss:",err)
 print("Done")
 
