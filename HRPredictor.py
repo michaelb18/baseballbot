@@ -1,31 +1,12 @@
 import numpy as numpy
 import csv
 import tensorflow as tf
-#import codecs
-e=2.7182818284
-def unbounded(x):
-	return e**x
-def sigmoid(x):
-	return 1/(1+numpy.exp(-x))
+#HR Predictor
 
-def sigmoidDeriv(x):
-	return x*(1-x)
-#Ian Kinsler
-inputs1=numpy.array([[.280,.249,.218],[.169,.289,.273],[.287,.265,.268],[.256,.259,.261],[.261,.227,.277],[.287,.299,.315],[.263,.263,.246],[.263,.246,.251],[.291,.291,.319],[.273,.330,.243],[.288,.276,.302],[.278,.286,.294],[.255,.314,.326],[.286,.278,.292],[.255,.297,.284],[.313,.331,.316],[.209,.279,.267],[.243,.247,.247],[.301,.307,.287],[.270,.297,.266],[.246,.257,.319],[.260,.291,.280],[.272,.272,.271],[.266,.285,.305],
-[.259,.261,.271],[.287,.170,.213],[.267,.301,.348],[.263,.246,.251],[.268,.267,.278],
-[.259,.255,.285],[.300,.287,.284],[.202,.226,.217],[.277,.279,.254],[.259,.255,.285],
-[.289,.264,.263],[.231,.231,.260],[.278,.303,.291],[.263,.263,.246],[.275,.296,.288],
-[.248,.224,.239],[.234,.210,.202],[.303,.300,.255],[.272,.276,.272],[.184,.208,.259]])
-outputs1=numpy.array([[.303,.273,.276,.264,.268,.306,.276,.263,.264,.319,.307,.259,.320,.273,.270,.249,.293,.247,.300,
-.318,.300,.292,.241,.268,.204,.288,.310,.263,.249,.272,.297,.270,.303,.272,.295,.259,.304,.276,.236,
-.193,.221,.255,.232,.238]]).T
-outputs=numpy.array([[0]]).T
-inputs=numpy.array([[0,0,0]])
-#numpy.random.seed(1)
 input_dict={}
-with open('../baseballdatabank/core/Batting.csv','r') as csvfile:
+with open('../../baseballdatabank/core/Batting.csv','r') as csvfile:
 
-	readCSV=csv.reader(csvfile,delimiter=',')#codecs.open('baseballdatabank/core/Batting.csv','rb','utf-8')
+	readCSV=csv.reader(csvfile,delimiter=',')
 	for row in readCSV:
 		if(row[0]!='playerID'):
 			if(int(row[1])>2000):
@@ -49,9 +30,6 @@ for k in input_dict:
 		l.append(input_dict.get(k)[size-2])
 		inputList.append(l)		
 numpy.random.seed(1)
-inputs=numpy.asarray(inputList)
-
-outputs=numpy.asarray(outputList)
 
 #hyperparams
 num_hidden_per_layer=20
@@ -79,18 +57,17 @@ init=tf.initialize_all_variables()
 
 with tf.Session() as sess:
 	sess.run(init)
-	err=sess.run(loss, feed_dict={input_label:inputs, output_label:outputs})
+	err=sess.run(loss, feed_dict={input_label:inputList, output_label:outputList})
 	i=0
 	for k in range(num_epochs):
-		sess.run(opt, feed_dict={input_label:inputs, output_label:outputs})
-		err=sess.run(loss, feed_dict={input_label:inputs, output_label:outputs})
+		sess.run(opt, feed_dict={input_label:inputList, output_label:outputList})
+		err=sess.run(loss, feed_dict={input_label:inputList, output_label:outputList})
 		i=i+1
 		if(i%10==0):
 			print("Err:",err)
 			print("I:",i) 
-	print("Test HR:",sess.run(output_layer,feed_dict={input_label:[[10,10,10]]}))
+	print("Test HR:",sess.run(output_layer,feed_dict={input_label:[[44,43,39]]}))
 	print("Total Loss:",err)
 print("Done")
-
 
 
