@@ -4,7 +4,7 @@ import tensorflow as tf
 #HR Predictor
 
 input_dict={}
-with open('../baseballdatabank/core/Batting.csv','r') as csvfile:
+with open('baseballdatabank/core/Batting.csv','r') as csvfile:
 
 	readCSV=csv.reader(csvfile,delimiter=',')
 	for row in readCSV:
