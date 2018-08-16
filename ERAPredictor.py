@@ -20,7 +20,7 @@ pd.options.display.max_rows = 10
 pd.options.display.float_format = '{:.1f}'.format
 
 #2. read in dataset
-baseball=pd.read_csv("../../baseballdatabank/core/Pitching.csv",sep=',')
+baseball=pd.read_csv("baseballdatabank/core/Pitching.csv",sep=',')
 baseball=baseball.dropna(axis=0, how="any")
 
 #3. split features and labels
@@ -65,14 +65,14 @@ def input_fn(batch_size,features,labels,numEpochs):
 	return features,labels
 
 #6. train the model
-inputs=tf.placeholder(dtype=tf.float32,shape=(None,3))
+inputs=tf.placeholder(dtype=tf.float32,shape=(None,3),name='inputs')
 ls=tf.placeholder(dtype=tf.float32)
 step=tf.Variable(dtype=tf.int32, initial_value=0)
 print(inputs.shape)
 
 #make the neural network's structure (using low level tf api)
-dense1=tf.layers.dense(inputs=inputs,units=35,activation=tf.nn.relu,name='dense1')
-dense2=tf.layers.dense(inputs=dense1,units=35,activation=tf.nn.relu,name='dense2')
+dense1=tf.layers.dense(inputs=inputs,units=75,activation=tf.nn.relu,name='dense1')
+dense2=tf.layers.dense(inputs=dense1,units=75,activation=tf.nn.relu,name='dense2')
 output_layer=tf.layers.dense(inputs=dense1,units=1,activation=tf.nn.relu,name='output_layer')
 step=tf.Variable(0,trainable=False,name="step")
 num_hidden_per_layer=35
@@ -88,18 +88,18 @@ init=tf.global_variables_initializer()
 save=tf.train.Saver(max_to_keep=7)
 with tf.Session() as sess:
 	sess.run(init)
-	save=tf.train.import_meta_graph('models/model.ckpt-1000.meta')
-	save.restore(sess,tf.train.latest_checkpoint("./models"))
+	save.save(sess,"models/ERAModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)
+	#save=tf.train.import_meta_graph('models/ERAModels/model.ckpt-1000.meta')
+	#save.restore(sess,tf.train.latest_checkpoint("./models/ERAModels"))
 	
 	for i in range(20000):
 		#feature,label=input_fn(batch_size=150,features=features,labels=labels, numEpochs=1)
-		sess.run(opt,feed_dict={inputs:features,ls:labels})
+		sess.run(opt,feed_dict={inputs:feature.eval(),ls:label.eval()})
 		step=tf.add(step,1)
 		if(i%500==0):
-			print("Saving model at step:",i,". Loss:",sess.run(loss,feed_dict={inputs:features,ls:labels}))
-			save.save(sess,"models/model.ckpt",global_step=step.eval(),write_meta_graph=False)
+			print("Saving model at step:",i,". Loss:",sess.run(loss,feed_dict={inputs:feature.eval(),ls:label.eval()}))
+			save.save(sess,"models/ERAModels/model.ckpt",global_step=step.eval(),write_meta_graph=False)
 		
-	save.save(sess,"models/model.ckpt",global_step=step.eval(),write_meta_graph=False)#,write_meta_graph=False
+	save.save(sess,"models/ERAModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)#,write_meta_graph=False
 
-	print("Model Saved. Save Path: model.ckpt")
 #7. train the model
