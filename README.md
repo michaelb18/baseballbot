@@ -9,8 +9,8 @@ a program that can predict stats for baseball players
 - [x] BA Predictor
 - [x] HR Predictor
 - [x] SB Predictor
-- [ ] R Predictor
-- [ ] RBI Predictor
+- [x] R Predictor
+- [x] RBI Predictor
 
 # Preliminary Results for low impact test(just notes for now):
 
