@@ -1,7 +1,7 @@
 # baseballbot
 a program that can predict stats for baseball players
 # to do list for next push
-- [ ] RBI Predictor
+- [x] RBI Predictor
 - [x] Clean up file structure and include baseballdatabank in repository to clear up confusion
 - [x] Upload pre-trained model for ERA Predictor
 
