@@ -6,7 +6,7 @@ import tensorflow as tf
 
 #2. read in data
 input_dict={}
-with open('../../baseballdatabank/core/Batting.csv','r') as csvfile:
+with open('baseballdatabank/core/Batting.csv','r') as csvfile:
 
 	readCSV=csv.reader(csvfile,delimiter=',')
 	for row in readCSV:
@@ -40,7 +40,7 @@ num_hidden_per_layer=25
 num_out=1
 num_in=3
 num_epochs=130
-input_label=tf.placeholder(tf.float32)
+input_label=tf.placeholder(tf.float32,name="inputs")
 output_label=tf.placeholder(tf.float32)
 
 #make weights 
@@ -57,7 +57,7 @@ first_hidden_layer=tf.sigmoid(tf.matmul(input_label,first_weight))
 second_hidden_layer=tf.sinh(tf.matmul(first_hidden_layer,second_weight))
 third_hidden_layer=tf.sigmoid(tf.matmul(second_hidden_layer,third_weight))
 dropout=tf.layers.dropout(inputs=third_hidden_layer)
-output_layer=tf.sigmoid(tf.matmul(dropout,fourth_weight))
+output_layer=tf.sigmoid(tf.matmul(dropout,fourth_weight),name="output_layer")
 #note - one layers output is the next layers input.
 
 #make the loss function
@@ -65,20 +65,23 @@ loss=tf.reduce_mean(output_layer-output_label)
 opt=tf.train.GradientDescentOptimizer(.001).minimize(loss)
 
 init=tf.initialize_all_variables()
+save=tf.train.Saver(max_to_keep=3)
 #6. train the model
 with tf.Session() as sess:
 	sess.run(init)
+	save.save(sess,"models/BA2Models/model.ckpt",write_meta_graph=True)
 	err=sess.run(loss, feed_dict={input_label:inputList, output_label:outputList})
 	i=0
-	while(abs(err)>.1):
+	while abs(err) > .1:
 		sess.run(opt, feed_dict={input_label:inputList, output_label:outputList})
 		err=sess.run(loss, feed_dict={input_label:inputList, output_label:outputList})
 		i=i+1
 		if(i%10==0):
 			print("Err:",err)
 			print("I:",i) 
-	print("Test Avg:",sess.run(output_layer,feed_dict={input_label:[[.314,.326,.320]]}))
+	print("Test Avg:",sess.run(output_layer,feed_dict={input_label:[[.263,.256,.234]]}))
 	print("Total Loss:",err)
+	save.save(sess,"models/BA2Models/model.ckpt",write_meta_graph=True)
 print("Done")
 
 #7. evalutate the model

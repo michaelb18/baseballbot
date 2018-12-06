@@ -6,7 +6,7 @@ import tensorflow as tf
 
 #2. read in data
 input_dict={}
-with open('../../baseballdatabank/core/Batting.csv','r') as csvfile:
+with open('baseballdatabank/core/Batting.csv','r') as csvfile:
 
 	readCSV=csv.reader(csvfile,delimiter=',')
 	for row in readCSV:
@@ -42,7 +42,7 @@ num_hidden_per_layer=20
 num_out=1
 num_in=3
 num_epochs=15000
-input_label=tf.placeholder(tf.float32)
+input_label=tf.placeholder(tf.float32, name='input')
 output_label=tf.placeholder(tf.float32)
 
 #make weights 
@@ -56,7 +56,7 @@ first_hidden_layer=tf.nn.softplus(tf.matmul(input_label,first_weight))
 second_hidden_layer=tf.nn.softplus(tf.matmul(first_hidden_layer,second_weight))
 third_hidden_layer=tf.nn.softplus(tf.matmul(second_hidden_layer,third_weight))
 dropout=tf.layers.dropout(inputs=third_hidden_layer)
-output_layer=tf.nn.softplus(tf.matmul(second_hidden_layer,fourth_weight))
+output_layer=tf.nn.softplus(tf.matmul(second_hidden_layer,fourth_weight),name="output_layer")
 
 #used 4 layers because that's what I found worked best through experimentation
 
@@ -65,11 +65,12 @@ output_layer=tf.nn.softplus(tf.matmul(second_hidden_layer,fourth_weight))
 #make the loss function
 loss=tf.reduce_mean(abs(output_layer-output_label))
 opt=tf.train.GradientDescentOptimizer(.001).minimize(loss)
-
+save=tf.train.Saver(max_to_keep=1)
 init=tf.initialize_all_variables()
 #6. train the model
 with tf.Session() as sess:
 	sess.run(init)
+	save.save(sess,"models/HRModels/model.ckpt",write_meta_graph=True)
 	err=sess.run(loss, feed_dict={input_label:inputList, output_label:outputList})
 	i=0
 	for k in range(num_epochs):
@@ -79,7 +80,8 @@ with tf.Session() as sess:
 		if(i%10==0):
 			print("Err:",err)
 			print("I:",i) 
-	print("Test HR:",sess.run(output_layer,feed_dict={input_label:[[0,18,6]]}))
+	save.save(sess,"models/HRModels/model.ckpt",write_meta_graph=True)
+	print("Test HR:",sess.run(output_layer,feed_dict={input_label:[[16,9,15]]}))
 	print("Total Loss:",err)
 print("Done")
 #7. evalutate the model

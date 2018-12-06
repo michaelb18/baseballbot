@@ -26,34 +26,28 @@ baseball=baseball.dropna(axis=0, how="any")
 #3. split features and labels
 def preproccessDataset(dataset):
 	feature_dict={};
-	cat=np.asarray(dataset['R'])
+	cat=np.asarray(dataset['RBI'])
 	ab=np.asarray(dataset['AB'])
 	names=np.asarray(dataset['playerID'])
 	years=np.asarray(dataset['yearID'])
 	count=0;
 	for i in cat:
-		if years[count] >= 2000 and ab[count]!=0 and cat[count]!=0:
+		if years[count] >= 1975 and ab[count]>=60 and cat[count]>=40:
 			if names[count] in feature_dict:
 				feature_dict.get(names[count]).append(cat[count])
-				feature_dict.get(names[count]).append(ab[count])
 			else:
 				feature_dict[names[count]]=[cat[count]]
-				feature_dict[names[count]]=[ab[count]]
 		count=count+1
 
 	features=[]
 	labels=[]
 	for k in feature_dict:
 		size=len(feature_dict.get(k))
-		if(size>=7):
-			l=[]
-			labels.append([feature_dict.get(k)[size-2]])
-			l.append(feature_dict.get(k)[size-8])
-			l.append(feature_dict.get(k)[size-7])
-			l.append(feature_dict.get(k)[size-6])			
-			l.append(feature_dict.get(k)[size-5])
+		if(size>=7):4
+			labels.append([feature_dict.get(k)[size-1]])
 			l.append(feature_dict.get(k)[size-4])
 			l.append(feature_dict.get(k)[size-3])
+			l.append(feature_dict.get(k)[size-2])
 			print(l)
 			features.append(l)
 	return features,labels
@@ -72,16 +66,16 @@ def input_fn(batch_size,features,labels,numEpochs):
 	return features,labels
 
 #6. train the model
-inputs=tf.placeholder(dtype=tf.float32,shape=(None,6),name='inputs')
+inputs=tf.placeholder(dtype=tf.float32,shape=(None,3),name='inputs')
 ls=tf.placeholder(dtype=tf.float32)
 step=tf.Variable(dtype=tf.int32, initial_value=0)
 print(inputs.shape)
 
-dense1=tf.layers.dense(inputs=inputs,units=15,activation=tf.nn.relu,name='dense1')
-#dense2=tf.layers.dense(inputs=dense1,units=15,activation=tf.nn.relu,name='dense2')
-#dense3=tf.layers.dense(inputs=dense2,units=15,activation=tf.nn.relu,name='dense3')
+dense1=tf.layers.dense(inputs=inputs,units=15,activation=tf.nn.softplus,name='dense1')
+dense2=tf.layers.dense(inputs=dense1,units=45,activation=tf.nn.relu,name='dense2')
+dense3=tf.layers.dense(inputs=dense2,units=25,activation=tf.nn.softplus,name='dense3')
 #dense4=tf.layers.dense(inputs=dense3,units=15,activation=tf.nn.relu,name='dense4')
-output_layer=tf.layers.dense(inputs=dense1,units=1,activation=tf.nn.relu,name='output_layer')
+output_layer=tf.layers.dense(inputs=dense3,units=1,activation=tf.nn.relu,name='output_layer')
 step=tf.Variable(0,trainable=False,name="step")
 num_hidden_per_layer=35
 num_out=1
@@ -96,11 +90,11 @@ init=tf.global_variables_initializer()
 save=tf.train.Saver(max_to_keep=7)
 with tf.Session() as sess:
 	sess.run(init)
-	save.save(sess,"models/RModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)
+	save.save(sess,"models/RBIModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)
 	#save=tf.train.import_meta_graph('models/ERAModels/model.ckpt-1000.meta')
 	#save.restore(sess,tf.train.latest_checkpoint("./models/ERAModels"))
 	
-	for i in range(1500):
+	for i in range(350):
 		#feature,label=input_fn(batch_size=150,features=features,labels=labels, numEpochs=1)
 		sess.run(opt,feed_dict={inputs:features,ls:labels})
 		step=tf.add(step,1)
@@ -108,5 +102,5 @@ with tf.Session() as sess:
 			print("Saving model at step:",i,". Loss:",sess.run(loss,feed_dict={inputs:features,ls:labels}))
 			#save.save(sess,"models/ERAModels/model.ckpt",global_step=step.eval(),write_meta_graph=False)
 		
-	save.save(sess,"models/RModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)#,write_meta_graph=False
+	save.save(sess,"models/RBIModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)#,write_meta_graph=False
 #7. train the model

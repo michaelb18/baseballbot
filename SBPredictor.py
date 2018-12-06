@@ -57,6 +57,7 @@ init=tf.initialize_all_variables()
 
 with tf.Session() as sess:
 	sess.run(init)
+	save.save(sess,"models/SBModels/model.ckpt",global_step=step.eval(),write_meta_graph=True)
 	err=sess.run(loss, feed_dict={input_label:inputList, output_label:outputList})
 	i=0
 	for k in range(num_epochs):
@@ -65,7 +66,8 @@ with tf.Session() as sess:
 		i=i+1
 		if(i%10==0):
 			print("Err:",err)
-			print("I:",i) 
+			print("I:",i)
+	save.save(sess,"models/SBModels/model.ckpt",global_step=step.eval(),write_meta_graph=True) 
 	print("Test SB:",sess.run(output_layer,feed_dict={input_label:[[11,11,3]]}))
 	print("Total Loss:",err)
 print("Done")
